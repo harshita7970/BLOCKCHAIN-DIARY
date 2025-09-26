@@ -1,7 +1,6 @@
 import streamlit as st
 from blockchain_diary import Blockchain, Block
 from time import time
-import pandas as pd
 import uuid
 from datetime import datetime
 
@@ -12,7 +11,7 @@ if "diary_chain" not in st.session_state:
 if "users" not in st.session_state:
     st.session_state.users = {}
 
-st.title("📝 Blockchain Digital Diary with Mining Details")
+st.title("📝 Blockchain Digital Diary - Expandable Block View")
 
 # User registration
 st.subheader("👤 Register / Select User")
@@ -49,36 +48,30 @@ if user_name:
             )
             mining_info = st.session_state.diary_chain.add_block(new_block)
             st.success("Entry added successfully! ✅")
-            
-            # Show blockchain calculations
-            st.subheader("⛏ Mining Details")
-            st.write(f"Previous Hash: {mining_info['previous_hash']}")
-            st.write(f"Nonce: {mining_info['nonce']}")
-            st.write(f"Difficulty: {mining_info['difficulty']}")
-            st.write(f"Mined Hash: {mining_info['hash']} 🔒")
+            st.info(f"Mined Hash: {mining_info['hash']} 🔒")
 
-# Display diary table
-st.header("📊 Diary Details")
-diary_data = []
+# Display blockchain with expandable blocks
+st.header("🔗 Blockchain Calculation (Click to Expand)")
+for block in st.session_state.diary_chain.chain:
+    ts = datetime.fromtimestamp(block.timestamp)
+    date_str = ts.strftime("%d-%m-%Y (%A)")
 
-for block in st.session_state.diary_chain.chain[1:]:
-    block_data = block.data
-    if isinstance(block_data, dict):
-        ts = datetime.fromtimestamp(block.timestamp)
-        date_str = ts.strftime("%d-%m-%Y (%A)")
-        diary_data.append({
-            "User Name": block_data["user_name"],
-            "Diary ID": block_data["diary_id"],
-            "Date": date_str,
-            "Entry": block_data["entry"],
-            "Block Hash": block.hash
-        })
+    if isinstance(block.data, dict):
+        user = block.data.get("user_name")
+        diary_id = block.data.get("diary_id")
+        entry_text = block.data.get("entry")
+    else:
+        user = "Genesis"
+        diary_id = "-"
+        entry_text = block.data
 
-if diary_data:
-    df = pd.DataFrame(diary_data)
-    st.table(df)
-else:
-    st.info("No diary entries yet.")
+    with st.expander(f"Block {block.index}"):
+        st.write(f"**Previous Hash:** {block.previous_hash}")
+        st.write(f"**Hash:** {block.hash}")
+        st.write(f"**User:** {user}")
+        st.write(f"**Diary ID:** {diary_id}")
+        st.write(f"**Date:** {date_str}")
+        st.write(f"**Entry:** {entry_text}")
 
 # Check blockchain integrity
 if st.button("Check Blockchain Integrity"):
