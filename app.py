@@ -10,10 +10,9 @@ if "diary_chain" not in st.session_state:
     st.session_state.diary_chain = Blockchain()
 
 if "users" not in st.session_state:
-    st.session_state.users = {}  # Stores username -> diary_id
+    st.session_state.users = {}
 
-st.title("📝 Blockchain Digital Diary with Mining")
-st.write("Each diary entry is mined into the blockchain. Tamper-proof!")
+st.title("📝 Blockchain Digital Diary with Mining Details")
 
 # User registration
 st.subheader("👤 Register / Select User")
@@ -21,7 +20,7 @@ user_name = st.text_input("Enter your name:")
 
 if user_name:
     if user_name not in st.session_state.users:
-        diary_id = str(uuid.uuid4())[:8]  # short unique ID
+        diary_id = str(uuid.uuid4())[:8]
         st.session_state.users[user_name] = diary_id
         st.success(f"Welcome, {user_name}! Your diary ID: {diary_id}")
     else:
@@ -48,15 +47,21 @@ if user_name:
                 },
                 previous_hash=""
             )
-            mined_hash = st.session_state.diary_chain.add_block(new_block)
+            mining_info = st.session_state.diary_chain.add_block(new_block)
             st.success("Entry added successfully! ✅")
-            st.info(f"Block mined with hash: {mined_hash} 🔒")
+            
+            # Show blockchain calculations
+            st.subheader("⛏ Mining Details")
+            st.write(f"Previous Hash: {mining_info['previous_hash']}")
+            st.write(f"Nonce: {mining_info['nonce']}")
+            st.write(f"Difficulty: {mining_info['difficulty']}")
+            st.write(f"Mined Hash: {mining_info['hash']} 🔒")
 
 # Display diary table
 st.header("📊 Diary Details")
 diary_data = []
 
-for block in st.session_state.diary_chain.chain[1:]:  # skip genesis
+for block in st.session_state.diary_chain.chain[1:]:
     block_data = block.data
     if isinstance(block_data, dict):
         ts = datetime.fromtimestamp(block.timestamp)
@@ -81,4 +86,3 @@ if st.button("Check Blockchain Integrity"):
         st.success("Blockchain is valid! 🔒 No tampering detected.")
     else:
         st.error("Warning! Blockchain has been tampered with!")
-
