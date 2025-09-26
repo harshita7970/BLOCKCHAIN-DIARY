@@ -13,13 +13,13 @@ if "users" not in st.session_state:
 
 st.title("📝 Blockchain Digital Diary - Expandable Block View")
 
-# User registration
+# 1️⃣ User registration
 st.subheader("👤 Register / Select User")
 user_name = st.text_input("Enter your name:")
 
 if user_name:
     if user_name not in st.session_state.users:
-        diary_id = str(uuid.uuid4())[:8]
+        diary_id = str(uuid.uuid4())[:8]  # generate short unique diary ID
         st.session_state.users[user_name] = diary_id
         st.success(f"Welcome, {user_name}! Your diary ID: {diary_id}")
     else:
@@ -28,7 +28,7 @@ if user_name:
 else:
     st.warning("Please enter your name to continue.")
 
-# Add diary entry
+# 2️⃣ Add diary entry
 if user_name:
     entry = st.text_area("Write your diary entry here:")
     if st.button("Add Entry"):
@@ -50,20 +50,15 @@ if user_name:
             st.success("Entry added successfully! ✅")
             st.info(f"Mined Hash: {mining_info['hash']} 🔒")
 
-# Display blockchain with expandable blocks
+# 3️⃣ Display blockchain calculations (start from Block 1)
 st.header("🔗 Blockchain Calculation (Click to Expand)")
-for block in st.session_state.diary_chain.chain:
+for block in st.session_state.diary_chain.chain[1:]:  # skip Genesis block
     ts = datetime.fromtimestamp(block.timestamp)
     date_str = ts.strftime("%d-%m-%Y (%A)")
 
-    if isinstance(block.data, dict):
-        user = block.data.get("user_name")
-        diary_id = block.data.get("diary_id")
-        entry_text = block.data.get("entry")
-    else:
-        user = "Genesis"
-        diary_id = "-"
-        entry_text = block.data
+    user = block.data.get("user_name")
+    diary_id = block.data.get("diary_id")
+    entry_text = block.data.get("entry")
 
     with st.expander(f"Block {block.index}"):
         st.write(f"**Previous Hash:** {block.previous_hash}")
@@ -73,9 +68,10 @@ for block in st.session_state.diary_chain.chain:
         st.write(f"**Date:** {date_str}")
         st.write(f"**Entry:** {entry_text}")
 
-# Check blockchain integrity
+# 4️⃣ Blockchain integrity check
 if st.button("Check Blockchain Integrity"):
     if st.session_state.diary_chain.is_chain_valid():
         st.success("Blockchain is valid! 🔒 No tampering detected.")
     else:
         st.error("Warning! Blockchain has been tampered with!")
+
