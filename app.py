@@ -50,17 +50,23 @@ if user_name:
             st.success("Entry added successfully! ✅")
             st.info(f"Mined Hash: {mining_info['hash']} 🔒")
 
-# 3️⃣ Display blockchain calculations (start from Block 1)
+# 3️⃣ Display blockchain calculations (show all blocks, but label starting from Block 1)
 st.header("🔗 Blockchain Calculation (Click to Expand)")
-for block in st.session_state.diary_chain.chain[1:]:  # skip Genesis block
+for i, block in enumerate(st.session_state.diary_chain.chain):
     ts = datetime.fromtimestamp(block.timestamp)
     date_str = ts.strftime("%d-%m-%Y (%A)")
 
-    user = block.data.get("user_name")
-    diary_id = block.data.get("diary_id")
-    entry_text = block.data.get("entry")
+    if isinstance(block.data, dict):
+        user = block.data.get("user_name")
+        diary_id = block.data.get("diary_id")
+        entry_text = block.data.get("entry")
+    else:
+        user = "Genesis"
+        diary_id = "-"
+        entry_text = block.data
 
-    with st.expander(f"Block {block.index}"):
+    display_block_number = i + 1  # label starting from Block 1
+    with st.expander(f"Block {display_block_number}"):
         st.write(f"**Previous Hash:** {block.previous_hash}")
         st.write(f"**Hash:** {block.hash}")
         st.write(f"**User:** {user}")
