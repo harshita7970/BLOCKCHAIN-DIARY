@@ -10,12 +10,12 @@ if "diary_chain" not in st.session_state:
     st.session_state.diary_chain = Blockchain()
 
 if "users" not in st.session_state:
-    st.session_state.users = {}  # Stores username -> diary_id mapping
+    st.session_state.users = {}  # Stores username -> diary_id
 
-st.title("📝 Blockchain-Based Digital Diary with Users")
-st.write("Register your name and write daily notes. Each diary is tamper-proof!")
+st.title("📝 Blockchain Digital Diary with Mining")
+st.write("Each diary entry is mined into the blockchain. Tamper-proof!")
 
-# 1️⃣ User Registration
+# User registration
 st.subheader("👤 Register / Select User")
 user_name = st.text_input("Enter your name:")
 
@@ -30,7 +30,7 @@ if user_name:
 else:
     st.warning("Please enter your name to continue.")
 
-# 2️⃣ Add Diary Entry
+# Add diary entry
 if user_name:
     entry = st.text_area("Write your diary entry here:")
     if st.button("Add Entry"):
@@ -48,23 +48,25 @@ if user_name:
                 },
                 previous_hash=""
             )
-            st.session_state.diary_chain.add_block(new_block)
+            mined_hash = st.session_state.diary_chain.add_block(new_block)
             st.success("Entry added successfully! ✅")
+            st.info(f"Block mined with hash: {mined_hash} 🔒")
 
-# 3️⃣ Display Diary Details in Table
+# Display diary table
 st.header("📊 Diary Details")
 diary_data = []
 
 for block in st.session_state.diary_chain.chain[1:]:  # skip genesis
     block_data = block.data
-    if isinstance(block_data, dict):  # only user diary entries
+    if isinstance(block_data, dict):
         ts = datetime.fromtimestamp(block.timestamp)
         date_str = ts.strftime("%d-%m-%Y (%A)")
         diary_data.append({
             "User Name": block_data["user_name"],
             "Diary ID": block_data["diary_id"],
             "Date": date_str,
-            "Entry": block_data["entry"]
+            "Entry": block_data["entry"],
+            "Block Hash": block.hash
         })
 
 if diary_data:
@@ -73,9 +75,10 @@ if diary_data:
 else:
     st.info("No diary entries yet.")
 
-# 4️⃣ Check Blockchain Integrity
+# Check blockchain integrity
 if st.button("Check Blockchain Integrity"):
     if st.session_state.diary_chain.is_chain_valid():
         st.success("Blockchain is valid! 🔒 No tampering detected.")
     else:
         st.error("Warning! Blockchain has been tampered with!")
+
