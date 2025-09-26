@@ -26,12 +26,17 @@ class Block:
         while self.hash[:difficulty] != target:
             self.nonce += 1
             self.hash = self.calculate_hash()
-        return self.hash  # return the mined hash
+        return {
+            "hash": self.hash,
+            "nonce": self.nonce,
+            "difficulty": difficulty,
+            "previous_hash": self.previous_hash
+        }
 
 class Blockchain:
     def __init__(self):
         self.chain = [self.create_genesis_block()]
-        self.difficulty = 4  # mining difficulty
+        self.difficulty = 4
 
     def create_genesis_block(self):
         return Block(0, time(), "Genesis Block", "0")
@@ -41,9 +46,9 @@ class Blockchain:
 
     def add_block(self, new_block):
         new_block.previous_hash = self.get_latest_block().hash
-        mined_hash = new_block.mine_block(self.difficulty)
+        mining_info = new_block.mine_block(self.difficulty)
         self.chain.append(new_block)
-        return mined_hash  # return the mined hash to show in app
+        return mining_info  # return mining details
 
     def is_chain_valid(self):
         for i in range(1, len(self.chain)):
@@ -55,5 +60,3 @@ class Blockchain:
             if current.previous_hash != previous.hash:
                 return False
         return True
-
-
