@@ -6,7 +6,7 @@ class Block:
     def __init__(self, index, timestamp, data, previous_hash):
         self.index = index
         self.timestamp = timestamp
-        self.data = data  # e.g., diary entry
+        self.data = data  # diary entry info
         self.previous_hash = previous_hash
         self.nonce = 0
         self.hash = self.calculate_hash()
@@ -22,17 +22,16 @@ class Block:
         return hashlib.sha256(block_string).hexdigest()
 
     def mine_block(self, difficulty=4):
-        # Proof-of-work: find a hash with leading zeros
         target = '0' * difficulty
         while self.hash[:difficulty] != target:
             self.nonce += 1
             self.hash = self.calculate_hash()
-        print(f"Block mined: {self.hash}")
+        return self.hash  # return the mined hash
 
 class Blockchain:
     def __init__(self):
         self.chain = [self.create_genesis_block()]
-        self.difficulty = 4  # Adjust mining difficulty
+        self.difficulty = 4  # mining difficulty
 
     def create_genesis_block(self):
         return Block(0, time(), "Genesis Block", "0")
@@ -42,8 +41,9 @@ class Blockchain:
 
     def add_block(self, new_block):
         new_block.previous_hash = self.get_latest_block().hash
-        new_block.mine_block(self.difficulty)
+        mined_hash = new_block.mine_block(self.difficulty)
         self.chain.append(new_block)
+        return mined_hash  # return the mined hash to show in app
 
     def is_chain_valid(self):
         for i in range(1, len(self.chain)):
@@ -56,12 +56,4 @@ class Blockchain:
                 return False
         return True
 
-    def display_chain(self):
-        for block in self.chain:
-            print(f"Index: {block.index}")
-            print(f"Timestamp: {block.timestamp}")
-            print(f"Entry: {block.data}")
-            print(f"Hash: {block.hash}")
-            print(f"Previous Hash: {block.previous_hash}")
-            print("-" * 50)
 
